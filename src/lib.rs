@@ -17,7 +17,7 @@ pub fn run() {
 
 #[derive(Clone, Debug)]
 pub enum PageData {
-    Post,
+    Post(PostData),
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +25,7 @@ pub struct PostData {
     pub title: String,
     pub date: NaiveDate,
     pub content: String,
+    pub tags: Vec<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -65,11 +66,14 @@ impl ContentParser<PageData> for BlogPostParser {
             title: post_frontmatter.title,
             date: date,
             content: content_and_front_matter.contents,
+            tags: post_frontmatter
+                .tags
+                .split_whitespace()
+                .map(|s| s.to_owned())
+                .collect(),
         };
 
-        dbg!(post_data);
-
-        Ok(PageData::Post)
+        Ok(PageData::Post(post_data))
     }
 }
 
@@ -77,7 +81,10 @@ pub struct BlogPostGenerator {}
 
 impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
     fn supports(&self, content: &PageData) -> bool {
-        true
+        match content {
+            PageData::Post(_) => true,
+            _ => false,
+        }
     }
     fn generate(
         &self,
