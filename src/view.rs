@@ -3,7 +3,7 @@ use typed_html::{
     elements::FlowContent,
     html, text,
     types::LinkType,
-    OutputType,
+    unsafe_text, OutputType,
 };
 
 pub fn base(title: &str, content: Box<dyn FlowContent<String>>) -> DOMTree<String> {
@@ -70,28 +70,32 @@ pub fn base(title: &str, content: Box<dyn FlowContent<String>>) -> DOMTree<Strin
     }
 }
 
-// pub fn blog_post(post: PostData) -> DOMTree<String> {
-//     html! {
-//         <article id="post">
+use crate::PostData;
 
-//             <header>
-//             <h1>{{ page.title }}</h1>
-//             <span>{{ page.date | date_to_string }}</span>
-//             </header>
+pub fn blog_post(post: &PostData, content_html: &str) -> DOMTree<String> {
+    let blog_html = html! {
+        <article id="post">
 
-//             <section>
-//         {{ content }}
-//         </section>
+            <header>
+            <h1>{ text!(&post.title) }</h1>
+            <span>{ text!(&post.date.format("%Y-%m-%d").to_string()) }</span>
+            </header>
 
-//         //     <aside id="related">
-//         //     <h3>"Related Posts"</h3>
-//         //     <ul class="posts">
-//         // {% for post in site.related_posts limit:3 %}
-//         // <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-//         // {% endfor %}
-//         // </ul>
-//         //     </aside>
+            <section>
+        { unsafe_text!(content_html) }
+        </section>
 
-//             </article>
-//     }
-// }
+        //     <aside id="related">
+        //     <h3>"Related Posts"</h3>
+        //     <ul class="posts">
+        // {% for post in site.related_posts limit:3 %}
+        // <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
+        // {% endfor %}
+        // </ul>
+        //     </aside>
+
+            </article>
+    };
+
+    base(&post.title, blog_html)
+}

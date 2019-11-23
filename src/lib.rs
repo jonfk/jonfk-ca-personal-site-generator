@@ -5,6 +5,7 @@ use anyhow::Error;
 use chrono::NaiveDate;
 use rodin::{ContentGenerator, ContentParser, File, Generator, Page, Rodin, SiteVariables};
 use serde::Deserialize;
+use std::path::{Path, PathBuf};
 use typed_html::{html, text};
 
 pub fn run() {
@@ -86,11 +87,36 @@ impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
             _ => false,
         }
     }
+
     fn generate(
         &self,
         content: &PageData,
         site_variables: &SiteVariables<PageData>,
     ) -> Result<Vec<Page<PageMetadata>>, Box<dyn std::error::Error>> {
-        Ok(vec![])
+        use pulldown_cmark::{html, Options, Parser};
+        use view::blog_post;
+
+        match content {
+            PageData::Post(post_data) => {
+                let parser = Parser::new_ext(&post_data.content, Options::all());
+                let mut html_output = String::new();
+                html::push_html(&mut html_output, parser);
+
+                let page = Page {
+                    path: Path::new(&format!(
+                        "posts/{}-{}.html",
+                        post_data.date.format("%Y-%m-%d"),
+                        post_data.title.replace(" ", "_")
+                    ))
+                    .to_owned(),
+                    contents: blog_post(post_data, &html_output).to_string(),
+                    metadata: PageMetadata {},
+                };
+
+                Ok(vec![page])
+            }
+
+            _ => unreachable!(),
+        }
     }
 }
