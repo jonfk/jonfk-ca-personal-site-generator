@@ -3,8 +3,7 @@ use crate::{view::blog_post, PageData, PageMetadata};
 use anyhow::Error;
 use chrono::NaiveDate;
 use rodin::{
-    fs_util::format_title_filename, ContentGenerator, ContentParser, File, Generator, Page, Rodin,
-    SiteVariables,
+    fs_util::format_title_filename, ContentGenerator, ContentParser, File, Page, SiteVariables,
 };
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
@@ -78,7 +77,7 @@ impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
     fn generate(
         &self,
         content: &PageData,
-        site_variables: &SiteVariables<PageData>,
+        site_variables: &SiteVariables<PageData, PageMetadata>,
     ) -> Result<Vec<Page<PageMetadata>>, Box<dyn std::error::Error>> {
         use pulldown_cmark::{html, Options, Parser};
 

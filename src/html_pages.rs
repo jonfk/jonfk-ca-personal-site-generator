@@ -59,7 +59,7 @@ impl ContentGenerator<PageData, PageMetadata> for HtmlPageGenerator {
     fn generate(
         &self,
         content: &PageData,
-        _site_variables: &SiteVariables<PageData>,
+        _site_variables: &SiteVariables<PageData, PageMetadata>,
     ) -> Result<Vec<Page<PageMetadata>>, Box<dyn std::error::Error>> {
         match content {
             PageData::HtmlPage(data) => {

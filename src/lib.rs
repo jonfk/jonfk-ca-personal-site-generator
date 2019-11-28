@@ -1,5 +1,6 @@
 #![recursion_limit = "1000"]
 pub mod cli;
+pub mod homepage;
 pub mod html_pages;
 pub mod posts;
 pub mod view;
@@ -10,7 +11,7 @@ use crate::{
 };
 
 use anyhow::Error;
-use rodin::{Generator, Rodin};
+use rodin::Rodin;
 use structopt::StructOpt;
 
 pub fn run() -> Result<(), Error> {
@@ -20,9 +21,9 @@ pub fn run() -> Result<(), Error> {
         .rm_target_dir_on_build(!opt.disable_rm_target)
         // Register parsers and generators
         .register_parser(Box::new(BlogPostParser {}))
-        .register_generator(Generator::Content(Box::new(BlogPostGenerator {})))
+        .register_content_generator(Box::new(BlogPostGenerator {}))
         .register_parser(Box::new(HtmlPageParser {}))
-        .register_generator(Generator::Content(Box::new(HtmlPageGenerator {})))
+        .register_content_generator(Box::new(HtmlPageGenerator {}))
         // static assets
         .add_static_assets(&vec!["static"]);
 
