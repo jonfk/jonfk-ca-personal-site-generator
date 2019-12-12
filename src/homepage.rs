@@ -51,9 +51,6 @@ struct Post {
 }
 
 fn view(posts: Vec<Post>) -> String {
-    for post in &posts {
-        dbg!(&post.relative_url);
-    }
     let body_html = html! {
         <div class="home">
             <section>
