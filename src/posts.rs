@@ -1,4 +1,4 @@
-use crate::{view::blog_post, PageData, PageMetadata};
+use crate::{view::blog_post, PageData, PageMetadata, PageType};
 
 use anyhow::Error;
 use chrono::NaiveDate;
@@ -6,9 +6,7 @@ use rodin::{
     fs_util::format_title_filename, ContentGenerator, ContentParser, File, Page, SiteVariables,
 };
 use serde::Deserialize;
-use std::path::{Path, PathBuf};
-use structopt::StructOpt;
-use typed_html::{html, text};
+use std::path::Path;
 
 #[derive(Clone, Debug)]
 pub struct PostData {
@@ -27,10 +25,12 @@ pub struct PostFrontMatter {
 pub struct BlogPostParser {}
 
 impl ContentParser<PageData> for BlogPostParser {
+    type Err = Error;
+
     fn supports(&self, file: &File) -> bool {
         file.path.starts_with("posts")
     }
-    fn parse(&self, file: &File) -> Result<PageData, Box<dyn std::error::Error>> {
+    fn parse(&self, file: &File) -> Result<PageData, Self::Err> {
         let filename = file
             .path
             .file_name()
@@ -67,6 +67,8 @@ impl ContentParser<PageData> for BlogPostParser {
 pub struct BlogPostGenerator {}
 
 impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
+    type Err = Error;
+
     fn supports(&self, content: &PageData) -> bool {
         match content {
             PageData::Post(_) => true,
@@ -77,8 +79,8 @@ impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
     fn generate(
         &self,
         content: &PageData,
-        site_variables: &SiteVariables<PageData, PageMetadata>,
-    ) -> Result<Vec<Page<PageMetadata>>, Box<dyn std::error::Error>> {
+        _site_variables: &SiteVariables<PageData, PageMetadata>,
+    ) -> Result<Vec<Page<PageMetadata>>, Self::Err> {
         use pulldown_cmark::{html, Options, Parser};
 
         match content {
@@ -95,7 +97,11 @@ impl ContentGenerator<PageData, PageMetadata> for BlogPostGenerator {
                     ))
                     .to_owned(),
                     contents: blog_post(post_data, &html_output).to_string(),
-                    metadata: PageMetadata {},
+                    metadata: PageMetadata {
+                        title: post_data.title.clone(),
+                        date: post_data.date,
+                        page_type: PageType::BlogPost,
+                    },
                 };
 
                 Ok(vec![page])

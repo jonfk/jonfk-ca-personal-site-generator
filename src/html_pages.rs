@@ -1,4 +1,4 @@
-use crate::{view, PageData, PageMetadata};
+use crate::{view, PageData, PageMetadata, PageType};
 
 use anyhow::Error;
 use chrono::NaiveDate;
@@ -24,10 +24,12 @@ pub struct HtmlPageFrontMatter {
 pub struct HtmlPageParser {}
 
 impl ContentParser<PageData> for HtmlPageParser {
+    type Err = Error;
+
     fn supports(&self, file: &File) -> bool {
         file.path.starts_with("pages")
     }
-    fn parse(&self, file: &File) -> Result<PageData, Box<dyn std::error::Error>> {
+    fn parse(&self, file: &File) -> Result<PageData, Self::Err> {
         let content_and_front_matter = file
             .read_front_matter_and_contents("---")
             .expect("failed getting front matter");
@@ -49,6 +51,8 @@ impl ContentParser<PageData> for HtmlPageParser {
 pub struct HtmlPageGenerator {}
 
 impl ContentGenerator<PageData, PageMetadata> for HtmlPageGenerator {
+    type Err = Error;
+
     fn supports(&self, content: &PageData) -> bool {
         match content {
             PageData::HtmlPage(_) => true,
@@ -60,7 +64,7 @@ impl ContentGenerator<PageData, PageMetadata> for HtmlPageGenerator {
         &self,
         content: &PageData,
         _site_variables: &SiteVariables<PageData, PageMetadata>,
-    ) -> Result<Vec<Page<PageMetadata>>, Box<dyn std::error::Error>> {
+    ) -> Result<Vec<Page<PageMetadata>>, Self::Err> {
         match content {
             PageData::HtmlPage(data) => {
                 let page = Page {
@@ -71,7 +75,11 @@ impl ContentGenerator<PageData, PageMetadata> for HtmlPageGenerator {
                         html!(<div>{ unsafe_text!(&data.content) }</div>),
                     )
                     .to_string(),
-                    metadata: PageMetadata {},
+                    metadata: PageMetadata {
+                        title: data.title.clone(),
+                        date: data.last_modified,
+                        page_type: PageType::HtmlPage,
+                    },
                 };
 
                 Ok(vec![page])
