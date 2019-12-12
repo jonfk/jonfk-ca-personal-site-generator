@@ -2,16 +2,9 @@ use crate::{view, PageData, PageMetadata, PageType};
 
 use anyhow::Error;
 use chrono::{NaiveDate, Utc};
-use rodin::{
-    fs_util::format_title_filename, ContentGenerator, ContentParser, File, OneTimeGenerator, Page,
-    SiteVariables,
-};
-use serde::Deserialize;
-use std::{
-    path::{Path, PathBuf},
-    time::SystemTime,
-};
-use typed_html::{html, text, unsafe_text};
+use rodin::{OneTimeGenerator, Page, SiteVariables};
+use std::path::Path;
+use typed_html::{html, text};
 
 pub struct HomepageGenerator {}
 

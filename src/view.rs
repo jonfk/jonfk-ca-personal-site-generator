@@ -1,10 +1,4 @@
-use typed_html::{
-    dom::{DOMTree, Node},
-    elements::FlowContent,
-    html, text,
-    types::LinkType,
-    unsafe_text, OutputType,
-};
+use typed_html::{dom::DOMTree, elements::FlowContent, html, text, unsafe_text};
 
 pub fn base(title: &str, content: Box<dyn FlowContent<String>>) -> DOMTree<String> {
     html! {
